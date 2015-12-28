@@ -274,7 +274,7 @@ step4IonX : Int -> Int -> String -> String
 step4IonX mThreshold startLen drow =
     let
       afterNoi = (String.dropLeft startLen drow)
-      _ = Debug.log("step4Ion") (mThreshold, startLen, drow)
+      -- _ = Debug.log("step4Ion") (mThreshold, startLen, drow)
     in
     case String.uncons afterNoi  of
       Just (char, drowEnd) ->
