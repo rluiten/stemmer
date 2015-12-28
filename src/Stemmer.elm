@@ -39,112 +39,123 @@ Some examples and what running them produces
 
 -}
 stem : String -> String
-stem word =
+stem  word =
     if (String.length word) < 3 then
       word
     else
-      allSteps word
+      allStepsX word
 
 
-allSteps : String -> String
-allSteps =
+allStepsX : String -> String
+allStepsX =
     String.reverse
-      << String.fromList
-      -- << viewParams "post step5"
-      << step5
-      -- << viewParams "post step4"
-      << step4
-      -- << viewParams "post step3"
-      << step3
-      -- << viewParams "post step2"
-      << step2
-      -- << viewParams "post step1"
-      << step1
-      -- << viewParams " pre step1"
-      << String.toList
+      -- << viewParamsX "post step5"
+      << step5X
+      -- << viewParamsX "post step4"
+      << step4X
+      -- << viewParamsX "post step3"
+      << step3X
+      -- << viewParamsX "post step2"
+      << step2X
+      -- << viewParamsX "post step1"
+      << step1X
+      -- << viewParamsX " pre step1"
       << String.reverse
 
 
 -- output trace of parameters, great for getting
 -- a good view of stages if enabled in allSteps code
-viewParams : String -> List Char -> List Char
-viewParams context drow =
+viewParamsX : String -> String -> String
+viewParamsX context drow =
     let
-      s = String.fromList <| List.reverse drow
+      s = String.reverse drow
       _ = Debug.log("viewParams") (context, s, drow)
     in
       drow
 
 
 -- gets rid of plurals and -ed or -ing.
-step1 : List Char -> List Char
-step1 = step1c << step1b << step1a
-
+step1X : String -> String
+step1X =  step1cX << step1bX << step1aX
 
 -- This removes plurals
-step1a : List Char -> List Char
-step1a drow =
-    case drow of
-      's' :: 'e' :: 's' :: 's' :: mets ->
-        's' :: 's' :: mets
-      's' :: 'e' :: 'i' :: mets ->
-        'i' :: mets
-      's' :: 's' :: _ ->
-        drow
-      's' :: mets ->
-        mets
-      _ ->
-        drow
+step1aX : String -> String
+step1aX drow =
+    if String.startsWith "sess" drow then
+      String.dropLeft 2 drow --  leaves "ss"
+    else if String.startsWith "sei" drow then
+      String.dropLeft 2 drow -- leaves "i"
+    else if String.startsWith "ss" drow then
+      drow -- no change
+    else if String.startsWith "s" drow then
+      String.dropLeft 1 drow -- removes "s"
+    else
+      drow
 
 
-step1b : List Char -> List Char
-step1b drow =
-    case drow of
-      'd' :: 'e' :: 'e' :: mets ->
-        if (measure mets) > 0 then
-          'e' :: 'e' :: mets
+step1bX : String -> String
+step1bX drow =
+    if String.startsWith "dee" drow then
+        if (measureX (String.dropLeft 3 drow)) > 0 then
+          String.dropLeft 1 drow -- leave "ee"
         else
           drow
-
-      'd' :: 'e' :: mets ->
-        if hasVowel mets then
-          step1b2 mets
+    else if String.startsWith "de" drow then
+      let
+        mets = String.dropLeft 2 drow
+        -- _ = Debug.log ("step1bX") (drow, mets)
+      in
+        if hasVowelX mets then
+          step1b2X mets
         else
           drow
-
-      'g' :: 'n' :: 'i' :: mets ->
-        if hasVowel mets then
-          step1b2 mets
+    else if String.startsWith "gni" drow then
+      let
+        mets = String.dropLeft 3 drow
+        -- _ = Debug.log ("step1bX") (drow, hasVowelX mets)
+      in
+        if hasVowelX mets then
+          step1b2X mets
         else
           drow
+    else
+      drow
 
-      _ ->
-        drow
 
-
-step1b2 : List Char -> List Char
-step1b2 drow =
-    -- let _ = Debug.log("step1b2") (drow)
+step1b2X : String -> String
+step1b2X drow =
+    -- let
+    --   _ = Debug.log ("step1b2X") (drow)
     -- in
-    case drow of
-      't' :: 'a' :: mets ->
-        'e' :: 't' :: 'a' :: mets
-      'l' :: 'b' :: mets ->
-        'e' :: 'l' :: 'b' :: mets
-      'z' :: 'i' :: mets ->
-        'e' :: 'z' :: 'i' :: mets
-      h :: drowTail ->
-        -- let _ = Debug.log("step1b2 drowTail") (h, drowTail, drow, measure drow, endsWithCVC drow)
-        -- in
-        if endsWithDoubleCons drow
-            && not (h == 'l' || h == 's' || h == 'z') then
-          drowTail
-        else if (measure drow) == 1 && (endsWithCVC drow) then
-          'e' :: drow
-        else
+    if String.startsWith "ta" drow
+       || String.startsWith "lb" drow
+       || String.startsWith "zi" drow then
+      String.cons 'e' drow --  add "e"
+    else
+      -- let
+      --   _ = Debug.log ("step1b2X else") (drow)
+      -- in
+      case (String.uncons drow) of
+        Just (h, drowTail) ->
+          -- let
+          --   _ = Debug.log ("step1b2X Just") (drow, h, drowTail)
+          -- in
+          if endsWithDoubleConsX drow
+              && not (h == 'l' || h == 's' || h == 'z') then
+            -- let
+            --   _ = Debug.log ("step1b2X Just endsWithDoubleConsX drow")
+            --     ( drow, h, drowTail, endsWithDoubleConsX drow
+            --     , endsWithDoubleConsX drow
+            --         && not (h == 'l' || h == 's' || h == 'z'))
+            -- in
+            drowTail
+          else if (measureX drow) == 1 && (endsWithCVCX drow) then
+            String.cons 'e' drow
+          else
+            drow
+        Nothing ->
           drow
-      _ ->
-        drow
+
 
 -- This implements porter stemmer.
 -- it appears that lunr.js step 1c departs from the porter stemmer
@@ -153,45 +164,43 @@ step1b2 drow =
 -- but porter stemmer test fixture voc.txt and output.txt state specify.
 --  stem "lay" == "lai"
 --  stem "try" == "try"
-step1c : List Char -> List Char
-step1c drow =
-    case drow of
-      'y' :: mets ->
-        if hasVowel mets then
-          'i' :: mets
+step1cX : String -> String
+step1cX drow =
+    case String.uncons drow of
+      Just (c, drowTail) ->
+        if (c == 'y')
+           && hasVowelX drowTail then
+            String.cons 'i' drowTail
         else
-          drow
-      _ ->
+         drow
+      Nothing ->
         drow
 
 
--- makes cases below easier to read
-toLR = String.toList << String.reverse
-
-
-step2Rules : List (List Char, List Char)
-step2Rules =
-    [ (toLR "ational", toLR "ate")
-    , (toLR "tional", toLR "tion")
-    , (toLR "enci", toLR "ence")
-    , (toLR "anci", toLR "ance")
-    , (toLR "izer", toLR "ize")
-    , (toLR "bli", toLR "ble")
-    , (toLR "alli", toLR "al")
-    , (toLR "entli", toLR "ent")
-    , (toLR "eli", toLR "e")
-    , (toLR "ousli", toLR "ous")
-    , (toLR "ization", toLR "ize")
-    , (toLR "ation", toLR "ate")
-    , (toLR "ator", toLR "ate")
-    , (toLR "alism", toLR "al")
-    , (toLR "iveness", toLR "ive")
-    , (toLR "fulness", toLR "ful")
-    , (toLR "ousness", toLR "ous")
-    , (toLR "aliti", toLR "al")
-    , (toLR "iviti", toLR "ive")
-    , (toLR "biliti", toLR "ble")
-    , (toLR "logi", toLR "log")
+toR = String.reverse
+step2RulesX : List (String, String)
+step2RulesX =
+    [ (toR "ational", toR "ate")
+    , (toR "tional", toR "tion")
+    , (toR "enci", toR "ence")
+    , (toR "anci", toR "ance")
+    , (toR "izer", toR "ize")
+    , (toR "bli", toR "ble")
+    , (toR "alli", toR "al")
+    , (toR "entli", toR "ent")
+    , (toR "eli", toR "e")
+    , (toR "ousli", toR "ous")
+    , (toR "ization", toR "ize")
+    , (toR "ation", toR "ate")
+    , (toR "ator", toR "ate")
+    , (toR "alism", toR "al")
+    , (toR "iveness", toR "ive")
+    , (toR "fulness", toR "ful")
+    , (toR "ousness", toR "ous")
+    , (toR "aliti", toR "al")
+    , (toR "iviti", toR "ive")
+    , (toR "biliti", toR "ble")
+    , (toR "logi", toR "log")
     ]
 
 
@@ -200,136 +209,142 @@ maps double suffices to single ones. so -ization (-ize plus
 -ation) maps to -ize etc. note that the string before the suffix must give
 m() > 0
 -}
-step2 : List Char -> List Char
-step2 drow =
-    replaceStarts 0 step2Rules drow
+step2X : String -> String
+step2X drow =
+    replaceStartsX 0 step2RulesX drow
 
 
-step3Rules =
-    [ (toLR "icate", toLR "ic")
-    , (toLR "ative", [])
-    , (toLR "alize", toLR "al")
-    , (toLR "iciti", toLR "ic")
-    , (toLR "ical", toLR "ic")
-    , (toLR "ful", [])
-    , (toLR "ness", [])
+step3RulesX =
+    [ (toR "icate", toR "ic")
+    , (toR "ative", "")
+    , (toR "alize", toR "al")
+    , (toR "iciti", toR "ic")
+    , (toR "ical", toR "ic")
+    , (toR "ful", "")
+    , (toR "ness", "")
     ]
 
 
 -- deals with -ic-, -full, -ness etc. similar strategy to previous step
-step3 : List Char -> List Char
-step3 drow =
-    replaceStarts 0 step3Rules drow
+step3X : String -> String
+step3X drow =
+    replaceStartsX 0 step3RulesX drow
 
 
-step4Rules =
-    [ (toLR "al", [])
-    , (toLR "ance", [])
-    , (toLR "ence", [])
-    , (toLR "er", [])
-    , (toLR "ic", [])
-    , (toLR "able", [])
-    , (toLR "ible", [])
-    , (toLR "ant", [])
-    , (toLR "ement", [])
-    , (toLR "ment", [])
-    , (toLR "ent", [])
+step4RulesX =
+    [ (toR "al", "")
+    , (toR "ance", "")
+    , (toR "ence", "")
+    , (toR "er", "")
+    , (toR "ic", "")
+    , (toR "able", "")
+    , (toR "ible", "")
+    , (toR "ant", "")
+    , (toR "ement", "")
+    , (toR "ment", "")
+    , (toR "ent", "")
     -- "ion" special case for "sion" "tion" see step4Ion
-    , (toLR "ou", [])
-    , (toLR "ism", [])
-    , (toLR "ate", [])
-    , (toLR "iti", [])
-    , (toLR "ous", [])
-    , (toLR "ive", [])
-    , (toLR "ize", [])
+    , (toR "ou", "")
+    , (toR "ism", "")
+    , (toR "ate", "")
+    , (toR "iti", "")
+    , (toR "ous", "")
+    , (toR "ive", "")
+    , (toR "ize", "")
     ]
 
 
 -- takes off -ant, -ence etc., in context <c>vcvc<v>
-step4 : List Char -> List Char
-step4 drow =
+step4X : String -> String
+step4X drow =
     let
       mThreshold = 1
-      ionCase = toLR "ion"
-      ionLen = List.length ionCase
-      drowStart = List.take ionLen drow
+      ionCase = "noi"
+      ionLen = String.length ionCase
+      drowStart = String.left ionLen drow
     in
       if (drowStart == ionCase) then -- handle (t)ion (s)ion
-        step4Ion mThreshold ionLen drow
+        step4IonX mThreshold ionLen drow
       else
-        replaceStarts mThreshold step4Rules drow
+        replaceStartsX mThreshold step4RulesX drow
 
 
 -- handle (tion) and (sion)
-step4Ion : Int -> Int -> List Char -> List Char
-step4Ion mThreshold startLen drow =
+step4IonX : Int -> Int -> String -> String
+step4IonX mThreshold startLen drow =
     let
-      drowEnd = List.drop startLen drow
-      headMeasureCheck dorowEnd char =
-        if (char == 't' || char == 's' )
-            && (measure drowEnd) > mThreshold then
-          Just drowEnd
-        else
-          Nothing
+      afterNoi = (String.dropLeft startLen drow)
+      _ = Debug.log("step4Ion") (mThreshold, startLen, drow)
     in
-      withDefault drow <|
-        (List.head drowEnd) `andThen`
-          (headMeasureCheck drowEnd)
-
-
-step5 : List Char -> List Char
-step5 = step5b << step5a
-
-
-step5a : List Char -> List Char
-step5a drow =
-    case drow of
-      'e' :: mets ->
-        let
-          m = measure mets
-          -- _ = Debug.log("step5a") (drow, m, endsWithCVC mets)
-        in
-          if m > 1 then
-            mets
-          else if m == 1 && not (endsWithCVC mets) then
-            -- let _ = Debug.log("step5a endsWithCVC") (mets, m)
-            -- in
-            mets
-          else
-            drow
-      _ ->
+    case String.uncons afterNoi  of
+      Just (char, drowEnd) ->
+        -- let _ = Debug.log("step4Ion 1") (mThreshold, startLen, drow, char, drowEnd, (measureX afterNoi))
+        -- in
+        if (char == 't' || char == 's' )
+          && (measureX afterNoi) > mThreshold then
+          -- let _ = Debug.log("step4Ion 2") (mThreshold, startLen, drow, char, drowEnd, (measureX afterNoi))
+          -- in
+          afterNoi
+        else
+          drow
+      Nothing ->
         drow
 
 
-step5b : List Char -> List Char
-step5b drow =
-    case drow of
-      'l' :: mets ->
-        if (measure mets) > 1
-            && endsWithDoubleCons drow then
-          mets
+step5X : String -> String
+step5X = step5bX << step5aX
+
+
+step5aX : String -> String
+step5aX drow =
+    case String.uncons drow of
+      Just (char, drowEnd) ->
+        if char == 'e' then
+          let
+            m = measureX drowEnd
+          in
+            if m > 1 then
+              drowEnd
+            else if m == 1 && not (endsWithCVCX drowEnd) then
+              drowEnd
+            else
+              drow
         else
           drow
-      _ ->
+      Nothing ->
+        drow
+
+
+step5bX : String -> String
+step5bX drow =
+    case String.uncons drow of
+      Just (char, drowEnd) ->
+        if (char == 'l')
+            && (measureX drowEnd) > 1
+            &&  endsWithDoubleConsX drow then
+          drowEnd
+        else
+          drow
+      Nothing ->
         drow
 
 
 {- Return result of application of the first rule that matches input pattern
 it does not have to actually change the string just match pattern.
 -}
-replaceStarts : Int -> List (List Char, List Char) -> List Char -> List Char
-replaceStarts measureThreshold rules drow =
+replaceStartsX : Int -> List (String, String) -> String -> String
+replaceStartsX measureThreshold rules drow =
     case rules of
-      [] ->
-        drow
       r :: rs ->
         let
-          (patternMatched, newDrow) = replaceStart measureThreshold r drow
+          (patternMatched, newDrow) = replaceStartX measureThreshold r drow
         in
           if patternMatched then
             newDrow
           else
-            replaceStarts measureThreshold rs drow
+            replaceStartsX measureThreshold rs drow
+      [] ->
+        drow
 
 
 {-| Apply replacement rule matching start with newStart if measure threshold
@@ -339,23 +354,22 @@ was matched regardless of measureThreshold.
 ```elm
   (patterMatched, newDrow) = replaceStart measureThreshold rule drow
 ```
-
 -}
-replaceStart : Int -> (List Char, List Char) -> List Char -> (Bool, List Char)
-replaceStart measureThreshold (start, newStart) drow =
+replaceStartX : Int -> (String, String) -> String -> (Bool, String)
+replaceStartX measureThreshold (start, newStart) drow =
     let
-      startLen = List.length start
-      drowStart = List.take startLen drow
+      startLen = String.length start
+      drowStart = String.left startLen drow
     in
       if drowStart == start then
         let
-          drowEnd = List.drop startLen drow
-          --_ = Debug.log("replaceStart measure") (measure drowEnd, drowEnd)
+          drowEnd = String.dropLeft startLen drow
+          -- _ = Debug.log("replaceStart measure") (measureX drowEnd, drowEnd)
         in
           -- even if measure threshold not reached we have matched the start
           -- so the result is True for matched prefix
-          if (measure drowEnd) > measureThreshold then
-            (True, newStart ++ drowEnd)
+          if (measureX drowEnd) > measureThreshold then
+            (True, String.append newStart drowEnd)
           else
             (True, drow)
       else
@@ -397,100 +411,115 @@ presence,
 Input word in this implementation is reversed, so correct it is
 restored to forward to calculate measure.
 -}
-measure : List Char -> Int
-measure drow =
+measureX : String -> Int
+measureX drow =
     let
-      word = List.reverse drow
+      word = String.reverse drow
       -- _ = Debug.log("measure forward word") (word)
     in
-      case word of
-        [] -> 0
-        h :: t ->
+      case (String.uncons word) of
+        Just (h, wordTail) ->
           case isVowel h of
-            True -> foundVowel t 0
-            False -> foundLeadingConsonant t
+            True -> foundVowelX wordTail 0
+            False -> foundLeadingConsonantX wordTail
+        Nothing ->
+          0
 
-
-foundLeadingConsonant : List Char -> Int
-foundLeadingConsonant word =
-    case word of
-      [] -> 0
-      h :: t ->
+foundLeadingConsonantX : String -> Int
+foundLeadingConsonantX word =
+    case (String.uncons word) of
+      Just (h, wordTail) ->
         case isVowelWithY h of
-          True -> foundVowel t 0
-          False -> foundLeadingConsonant t
+          True -> foundVowelX wordTail 0
+          False -> foundLeadingConsonantX wordTail
+      Nothing ->
+        0
 
 
-foundVowel : List Char -> Int -> Int
-foundVowel word m =
-    case word of
-      [] -> m
-      h :: t ->
+foundVowelX : String -> Int -> Int
+foundVowelX word m =
+    case (String.uncons word) of
+      Just (h, wordTail) ->
         case isVowel h of
-          True -> foundVowel t m
-          False -> foundConsonant t (m + 1)
+          True -> foundVowelX wordTail m
+          False -> foundConsonantX wordTail (m + 1)
+      Nothing ->
+        m
 
 
-foundConsonant : List Char -> Int -> Int
-foundConsonant word m =
-    case word of
-      [] -> m
-      h :: t ->
+foundConsonantX : String -> Int -> Int
+foundConsonantX word m =
+    case (String.uncons word) of
+      Just (h, wordTail) ->
         case isVowelWithY h of
-          True -> foundVowel t m
-          False -> foundConsonant t m
-
-
--- Implements *S - the stem ends with "s" (and similarly for other letters)
-endsWith : Char -> List Char -> Bool
-endsWith char drow =
-    case drow of
-      char :: t -> True
-      _ -> False
+          True -> foundVowelX wordTail m
+          False -> foundConsonantX wordTail m
+      Nothing ->
+        m
 
 
 -- Implements *v* - the stem contains a vowel
-hasVowel : List Char -> Bool
-hasVowel drow =
-    let
-      word = List.reverse drow
-    in
-      case word of
-        [] -> False
-        h :: t ->
-          case isVowel h of
-            True -> True
-            False -> hasVowel2 t
+hasVowelX : String -> Bool
+hasVowelX drow =
+    case (String.uncons (String.reverse drow)) of
+      Just (h, wordTail) ->
+        case isVowel h of
+          True -> True
+          False -> hasVowel2X wordTail
+      Nothing ->
+        False
 
 
-hasVowel2 : List Char -> Bool
-hasVowel2 word =
-    case word of
-      [] -> False
-      h :: t ->
+hasVowel2X : String -> Bool
+hasVowel2X word =
+    case (String.uncons word) of
+      Just (h, wordTail) ->
         case isVowelWithY h of
           True -> True
-          False -> hasVowel2 t
+          False -> hasVowel2X wordTail
+      Nothing ->
+        False
 
 
 -- Implements *d - the stem ends with a double consonant.
-endsWithDoubleCons : List Char -> Bool
-endsWithDoubleCons drow =
-    case drow of
-      c1 :: c2 :: tail ->
-        if not (isVowelWithY c1) && c1 == c2 then
-          True
+endsWithDoubleConsX : String -> Bool
+endsWithDoubleConsX drow =
+    case String.uncons drow of
+      Just (c1, drowTail) ->
+        if not (isVowelWithY c1) then
+          case String.uncons drowTail of
+            Just (c2, drowTail2) ->
+              c1 == c2
+            Nothing ->
+              False
         else
           False
-      _ -> False
+      Nothing ->
+        False
 
 
 -- Implements *o - the stem ends cvc, where the second c is not w, x, or y.
-endsWithCVC : List Char -> Bool
-endsWithCVC drow =
-    case drow of
-      c2 :: v :: c1 :: t ->
-             (not (isVowel c1))
-          && (isVowelWithY v)
-          && (not ((isVowel c2) || (c2 == 'w') || (c2 == 'x') || (c2 == 'y')))
-      _ -> False
+endsWithCVCX : String -> Bool
+endsWithCVCX drow =
+    case String.uncons drow of
+      Just (c2, drowTail1) ->
+        if not ((isVowel c2) || (c2 == 'w') || (c2 == 'x') || (c2 == 'y')) then
+          case String.uncons drowTail1 of
+            Just (v, drowTail2) ->
+              if (isVowelWithY v) then
+                case String.uncons drowTail2 of
+                  Just (c1, drowTail3) ->
+                    -- let
+                    --   _ = Debug.log ("endsWithCVCX") (drow, c2, v, c1)
+                    -- in
+                    not (isVowel c1)
+                  Nothing ->
+                    False
+              else
+                False
+            Nothing ->
+              False
+        else
+          False
+      Nothing ->
+        False

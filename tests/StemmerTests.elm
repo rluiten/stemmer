@@ -120,5 +120,8 @@ stemmingFixture =
     , ( "achilles", "achil" )
     , ( "agreement", "agreement" )
     , ( "baying", "bai" )
+    , ( "abruption", "abrupt" )
+    , ( "additions", "addit" )
+    , ( "crying", "cry" )
 
     ]
