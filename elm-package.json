@@ -1,5 +1,5 @@
 {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "summary": "Stemmer is an Elm language implementation of Porter Stemmer",
     "repository": "https://github.com/rluiten/stemmer.git",
     "license": "BSD3",
