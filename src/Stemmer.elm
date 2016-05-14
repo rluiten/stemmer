@@ -1,4 +1,4 @@
-module Stemmer (stem) where
+module Stemmer exposing (stem)
 
 {-| Stemmer is an english language stemmer, this is an Elm
 implementation of the PorterStemmer taken from http://tartarus.org/~martin.

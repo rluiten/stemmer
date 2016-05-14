@@ -1,4 +1,4 @@
-module StemmerTestsFullPorter where
+module StemmerTestsFullPorter exposing (..)
 
 import ElmTest exposing (..)
 
@@ -14,13 +14,11 @@ type alias StemCase = (String, String)
 
 tests : Test
 tests =
-    suite "Stemmer Tokenizer tests for Full Porter"
-      <| List.map testStemmer StemmerFixture.fixture
+  suite "Stemmer Tokenizer tests for Full Porter"
+    <| List.map testStemmer StemmerFixture.fixture
 
 
 testStemmer : StemCase -> Test
 testStemmer (word, expectedStem) =
-    test ("stem " ++ word ++ " to " ++ expectedStem ++ " ")
-      <| assertEqual
-          expectedStem
-          (Stemmer.stem word)
+  test ("stem " ++ word ++ " to " ++ expectedStem ++ " ")
+    <| assertEqual expectedStem (Stemmer.stem word)

@@ -45,14 +45,14 @@ fs.readFile('voc.txt', 'utf8', function(inerr, indata) {
       }
     }
 
-    allCases = cases.join("    , ");
+    allCases = cases.join("  , ");
 
     var template =
-        `module StemmerFixture where\n`
+        `module StemmerFixture exposing (..)\n`
       + `\n`
       + `fixture = \n`
-      + `    [ ${allCases}`
-      + `    ]\n`;
+      + `  [ ${allCases}`
+      + `  ]\n`;
 
     fs.writeFile('StemmerFixture.elm', template, 'utf8', function (err, data) {
       if (err) {
