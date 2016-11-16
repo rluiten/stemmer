@@ -4,7 +4,6 @@ import Expect
 import Test exposing (..)
 
 import Stemmer
-import StemmerFixture
 
 
 {-| Test Stemmer, many many less tests than StemmerTestsFullPorter.elm..
