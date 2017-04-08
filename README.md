@@ -1,6 +1,6 @@
 # Porter Stemmer written in Elm language
 
-Copyright (c) 2016 Robin Luiten
+Copyright (c) 2016-2017 Robin Luiten
 
 This an implementation of the porter stemmer.
 
