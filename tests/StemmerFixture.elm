@@ -1,4 +1,4 @@
-module StemmerFixture exposing (..)
+module StemmerFixture exposing (fixture)
 
 
 fixture =

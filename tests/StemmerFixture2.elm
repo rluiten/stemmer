@@ -1,4 +1,4 @@
-module StemmerFixture2 exposing (..)
+module StemmerFixture2 exposing (expectString, inputString)
 
 
 inputString =

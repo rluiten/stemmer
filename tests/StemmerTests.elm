@@ -1,8 +1,8 @@
-module StemmerTests exposing (..)
+module StemmerTests exposing (StemCase, stemmingFixture, testStemmer, tests)
 
 import Expect
-import Test exposing (..)
 import Stemmer
+import Test exposing (..)
 
 
 {-| Test Stemmer, many many less tests than StemmerTestsFullPorter.elm..

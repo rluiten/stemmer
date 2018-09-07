@@ -24,7 +24,7 @@ Identifier names were adopted from elrang implementation.
 
 -}
 
-import Maybe exposing (withDefault, andThen)
+import Maybe exposing (andThen, withDefault)
 import String
 
 
@@ -43,8 +43,9 @@ Some examples and what running them produces
 -}
 stem : String -> String
 stem word =
-    if (String.length word) < 3 then
+    if String.length word < 3 then
         word
+
     else
         allStepsX word
 
@@ -66,50 +67,48 @@ allStepsX =
         << String.reverse
 
 
-
--- output trace of parameters, great for getting
+-- {-| output trace of parameters, great for getting
 -- a good view of stages if enabled in allSteps code
+-- -}
+-- viewParamsX : String -> String -> String
+-- viewParamsX context drow =
+--     let
+--         s =
+--             String.reverse drow
+--
+--         _ =
+--             Debug.log "viewParams" ( context, s, drow )
+--     in
+--     drow
 
 
-viewParamsX : String -> String -> String
-viewParamsX context drow =
-    let
-        s =
-            String.reverse drow
-
-        _ =
-            Debug.log ("viewParams") ( context, s, drow )
-    in
-        drow
-
-
-
--- gets rid of plurals and -ed or -ing.
-
-
+{-| gets rid of plurals and -ed or -ing.
+-}
 step1X : String -> String
 step1X =
     step1cX << step1bX << step1aX
 
 
-
--- This removes plurals
-
-
+{-| This removes plurals
+-}
 step1aX : String -> String
 step1aX drow =
     if String.startsWith "sess" drow then
         String.dropLeft 2 drow
         --  leaves "ss"
+
     else if String.startsWith "sei" drow then
         String.dropLeft 2 drow
         -- leaves "i"
+
     else if String.startsWith "ss" drow then
         drow
         -- no change
+
     else if String.startsWith "s" drow then
         String.dropLeft 1 drow
         -- removes "s"
+
     else
         drow
 
@@ -117,11 +116,13 @@ step1aX drow =
 step1bX : String -> String
 step1bX drow =
     if String.startsWith "dee" drow then
-        if (measureX (String.dropLeft 3 drow)) > 0 then
+        if measureX (String.dropLeft 3 drow) > 0 then
             String.dropLeft 1 drow
             -- leave "ee"
+
         else
             drow
+
     else if String.startsWith "de" drow then
         let
             mets =
@@ -129,10 +130,12 @@ step1bX drow =
 
             -- _ = Debug.log ("step1bX") (drow, mets)
         in
-            if hasVowelX mets then
-                step1b2X mets
-            else
-                drow
+        if hasVowelX mets then
+            step1b2X mets
+
+        else
+            drow
+
     else if String.startsWith "gni" drow then
         let
             mets =
@@ -140,10 +143,12 @@ step1bX drow =
 
             -- _ = Debug.log ("step1bX") (drow, hasVowelX mets)
         in
-            if hasVowelX mets then
-                step1b2X mets
-            else
-                drow
+        if hasVowelX mets then
+            step1b2X mets
+
+        else
+            drow
+
     else
         drow
 
@@ -160,11 +165,12 @@ step1b2X drow =
     then
         String.cons 'e' drow
         --  add "e"
+
     else
         -- let
         --   _ = Debug.log ("step1b2X else") (drow)
         -- in
-        case (String.uncons drow) of
+        case String.uncons drow of
             Just ( h, drowTail ) ->
                 -- let
                 --   _ = Debug.log ("step1b2X Just") (drow, h, drowTail)
@@ -180,8 +186,10 @@ step1b2X drow =
                     --         && not (h == 'l' || h == 's' || h == 'z'))
                     -- in
                     drowTail
-                else if (measureX drow) == 1 && (endsWithCVCX drow) then
+
+                else if measureX drow == 1 && endsWithCVCX drow then
                     String.cons 'e' drow
+
                 else
                     drow
 
@@ -208,6 +216,7 @@ step1cX drow =
                     && hasVowelX drowTail
             then
                 String.cons 'i' drowTail
+
             else
                 drow
 
@@ -245,14 +254,10 @@ step2RulesX =
     ]
 
 
-
-{-
-   maps double suffices to single ones. so -ization (-ize plus
-   -ation) maps to -ize etc. note that the string before the suffix must give
-   m() > 0
+{-| maps double suffices to single ones. so -ization (-ize plus
+-ation) maps to -ize etc. note that the string before the suffix must give
+m() > 0
 -}
-
-
 step2X : String -> String
 step2X drow =
     replaceStartsX 0 step2RulesX drow
@@ -269,10 +274,8 @@ step3RulesX =
     ]
 
 
-
--- deals with -ic-, -full, -ness etc. similar strategy to previous step
-
-
+{-| deals with -ic-, -full, -ness etc. similar strategy to previous step
+-}
 step3X : String -> String
 step3X drow =
     replaceStartsX 0 step3RulesX drow
@@ -321,11 +324,12 @@ step4X drow =
         drowStart =
             String.left ionLen drow
     in
-        if (drowStart == ionCase) then
-            -- handle (t)ion (s)ion
-            step4IonX mThreshold ionLen drow
-        else
-            replaceStartsX mThreshold step4RulesX drow
+    if drowStart == ionCase then
+        -- handle (t)ion (s)ion
+        step4IonX mThreshold ionLen drow
+
+    else
+        replaceStartsX mThreshold step4RulesX drow
 
 
 
@@ -336,27 +340,28 @@ step4IonX : Int -> Int -> String -> String
 step4IonX mThreshold startLen drow =
     let
         afterNoi =
-            (String.dropLeft startLen drow)
+            String.dropLeft startLen drow
 
         -- _ = Debug.log("step4Ion") (mThreshold, startLen, drow)
     in
-        case String.uncons afterNoi of
-            Just ( char, drowEnd ) ->
-                -- let _ = Debug.log("step4Ion 1") (mThreshold, startLen, drow, char, drowEnd, (measureX afterNoi))
+    case String.uncons afterNoi of
+        Just ( char, drowEnd ) ->
+            -- let _ = Debug.log("step4Ion 1") (mThreshold, startLen, drow, char, drowEnd, (measureX afterNoi))
+            -- in
+            if
+                (char == 't' || char == 's')
+                    && measureX afterNoi
+                    > mThreshold
+            then
+                -- let _ = Debug.log("step4Ion 2") (mThreshold, startLen, drow, char, drowEnd, (measureX afterNoi))
                 -- in
-                if
-                    (char == 't' || char == 's')
-                        && (measureX afterNoi)
-                        > mThreshold
-                then
-                    -- let _ = Debug.log("step4Ion 2") (mThreshold, startLen, drow, char, drowEnd, (measureX afterNoi))
-                    -- in
-                    afterNoi
-                else
-                    drow
+                afterNoi
 
-            Nothing ->
+            else
                 drow
+
+        Nothing ->
+            drow
 
 
 step5X : String -> String
@@ -373,12 +378,15 @@ step5aX drow =
                     m =
                         measureX drowEnd
                 in
-                    if m > 1 then
-                        drowEnd
-                    else if m == 1 && not (endsWithCVCX drowEnd) then
-                        drowEnd
-                    else
-                        drow
+                if m > 1 then
+                    drowEnd
+
+                else if m == 1 && not (endsWithCVCX drowEnd) then
+                    drowEnd
+
+                else
+                    drow
+
             else
                 drow
 
@@ -392,11 +400,12 @@ step5bX drow =
         Just ( char, drowEnd ) ->
             if
                 (char == 'l')
-                    && (measureX drowEnd)
+                    && measureX drowEnd
                     > 1
                     && endsWithDoubleConsX drow
             then
                 drowEnd
+
             else
                 drow
 
@@ -418,10 +427,11 @@ replaceStartsX measureThreshold rules drow =
                 ( patternMatched, newDrow ) =
                     replaceStartX measureThreshold r drow
             in
-                if patternMatched then
-                    newDrow
-                else
-                    replaceStartsX measureThreshold rs drow
+            if patternMatched then
+                newDrow
+
+            else
+                replaceStartsX measureThreshold rs drow
 
         [] ->
             drow
@@ -443,21 +453,23 @@ replaceStartX measureThreshold ( start, newStart ) drow =
         drowStart =
             String.left startLen drow
     in
-        if drowStart == start then
-            let
-                drowEnd =
-                    String.dropLeft startLen drow
+    if drowStart == start then
+        let
+            drowEnd =
+                String.dropLeft startLen drow
 
-                -- _ = Debug.log("replaceStart measure") (measureX drowEnd, drowEnd)
-            in
-                -- even if measure threshold not reached we have matched the start
-                -- so the result is True for matched prefix
-                if (measureX drowEnd) > measureThreshold then
-                    ( True, String.append newStart drowEnd )
-                else
-                    ( True, drow )
+            -- _ = Debug.log("replaceStart measure") (measureX drowEnd, drowEnd)
+        in
+        -- even if measure threshold not reached we have matched the start
+        -- so the result is True for matched prefix
+        if measureX drowEnd > measureThreshold then
+            ( True, String.append newStart drowEnd )
+
         else
-            ( False, drow )
+            ( True, drow )
+
+    else
+        ( False, drow )
 
 
 isVowel : Char -> Bool
@@ -491,6 +503,7 @@ isVowelCore includeY c =
         'y' ->
             if includeY then
                 True
+
             else
                 False
 
@@ -522,22 +535,22 @@ measureX drow =
 
         -- _ = Debug.log("measure forward word") (word)
     in
-        case (String.uncons word) of
-            Just ( h, wordTail ) ->
-                case isVowel h of
-                    True ->
-                        foundVowelX wordTail 0
+    case String.uncons word of
+        Just ( h, wordTail ) ->
+            case isVowel h of
+                True ->
+                    foundVowelX wordTail 0
 
-                    False ->
-                        foundLeadingConsonantX wordTail
+                False ->
+                    foundLeadingConsonantX wordTail
 
-            Nothing ->
-                0
+        Nothing ->
+            0
 
 
 foundLeadingConsonantX : String -> Int
 foundLeadingConsonantX word =
-    case (String.uncons word) of
+    case String.uncons word of
         Just ( h, wordTail ) ->
             case isVowelWithY h of
                 True ->
@@ -552,7 +565,7 @@ foundLeadingConsonantX word =
 
 foundVowelX : String -> Int -> Int
 foundVowelX word m =
-    case (String.uncons word) of
+    case String.uncons word of
         Just ( h, wordTail ) ->
             case isVowel h of
                 True ->
@@ -567,7 +580,7 @@ foundVowelX word m =
 
 foundConsonantX : String -> Int -> Int
 foundConsonantX word m =
-    case (String.uncons word) of
+    case String.uncons word of
         Just ( h, wordTail ) ->
             case isVowelWithY h of
                 True ->
@@ -580,13 +593,11 @@ foundConsonantX word m =
             m
 
 
-
--- Implements *v* - the stem contains a vowel
-
-
+{-| Implements _v_ - the stem contains a vowel
+-}
 hasVowelX : String -> Bool
 hasVowelX drow =
-    case (String.uncons (String.reverse drow)) of
+    case String.uncons (String.reverse drow) of
         Just ( h, wordTail ) ->
             case isVowel h of
                 True ->
@@ -601,7 +612,7 @@ hasVowelX drow =
 
 hasVowel2X : String -> Bool
 hasVowel2X word =
-    case (String.uncons word) of
+    case String.uncons word of
         Just ( h, wordTail ) ->
             case isVowelWithY h of
                 True ->
@@ -614,10 +625,8 @@ hasVowel2X word =
             False
 
 
-
--- Implements *d - the stem ends with a double consonant.
-
-
+{-| Implements \*d - the stem ends with a double consonant.
+-}
 endsWithDoubleConsX : String -> Bool
 endsWithDoubleConsX drow =
     case String.uncons drow of
@@ -629,6 +638,7 @@ endsWithDoubleConsX drow =
 
                     Nothing ->
                         False
+
             else
                 False
 
@@ -636,18 +646,16 @@ endsWithDoubleConsX drow =
             False
 
 
-
--- Implements *o - the stem ends cvc, where the second c is not w, x, or y.
-
-
+{-| Implements \*o - the stem ends cvc, where the second c is not w, x, or y.
+-}
 endsWithCVCX : String -> Bool
 endsWithCVCX drow =
     case String.uncons drow of
         Just ( c2, drowTail1 ) ->
-            if not ((isVowel c2) || (c2 == 'w') || (c2 == 'x') || (c2 == 'y')) then
+            if not (isVowel c2 || (c2 == 'w') || (c2 == 'x') || (c2 == 'y')) then
                 case String.uncons drowTail1 of
                     Just ( v, drowTail2 ) ->
-                        if (isVowelWithY v) then
+                        if isVowelWithY v then
                             case String.uncons drowTail2 of
                                 Just ( c1, drowTail3 ) ->
                                     -- let
@@ -657,11 +665,13 @@ endsWithCVCX drow =
 
                                 Nothing ->
                                     False
+
                         else
                             False
 
                     Nothing ->
                         False
+
             else
                 False
 

@@ -1,4 +1,4 @@
-module StemmerTestsFullPorter exposing (..)
+module StemmerTestsFullPorter exposing (StemCase, expects, fixture, inputs, testStemmer, tests)
 
 {-
    StemmerFixture one bombs compiling in Elm 0.18
@@ -8,9 +8,9 @@ module StemmerTestsFullPorter exposing (..)
 -}
 
 import Expect
-import Test exposing (..)
 import Stemmer
 import StemmerFixture2
+import Test exposing (..)
 
 
 inputs =
@@ -22,7 +22,7 @@ expects =
 
 
 fixture =
-    List.map2 (,) inputs expects
+    List.map2 Tuple.pair inputs expects
 
 
 {-| Full set of porter stemmer test as converted from the porter stemmer
